@@ -1,0 +1,5 @@
+raw/
+out/
+.key
+__pycache__/
+*.xlsx
