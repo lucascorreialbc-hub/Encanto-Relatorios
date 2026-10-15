@@ -21,10 +21,10 @@ SIGLA = {184005: 'LF', 158007: 'VG'}
 EQUIPE = {
     184005: {
         663619: ('Lívia', 'Recepção', 'Clientes na loja', 160, 'visitas'),
-        715590: ('Daiane (Aux. 1)', 'Closer', 'Resgates da loja (40 cada)', 80, 'resgates'),
-        917264: ('Grazi (Aux. 2)', 'Closer', 'Resgates da loja (40 cada)', 80, 'resgates'),
-        923873: ('Encantadora Aux. 3', 'Especialista', 'Atendimentos no mês', 55, 'atend'),
-        944846: ('Manicure', 'Manicure', 'Faturamento de serviços', 4000, 'fat'),
+        715590: ('Daiane Oliveira', 'Closer', 'Resgates da loja', 40, 'resgates'),
+        917264: ('Julia Costa', 'Especialista', 'Atendimentos no mês', 55, 'atend'),
+        923873: ('Rosana Rodrigues', 'Especialista', 'Atendimentos no mês', 55, 'atend'),
+        944846: ('Laiane Lima', 'Manicure', 'Faturamento de serviços', 4000, 'fat'),
         621335: ('Tamiles', 'Gerência', None, None, None),
         652782: ('Lucas', 'Gerência', None, None, None),
         628345: ('Mirlene', 'Recepção', None, None, None),
@@ -241,7 +241,7 @@ def build(out, stores, modo='manha', semanal=False):
             ('Assinaturas ativas hoje', [s['ativas'] for s in stores], INT, 'Trinks: Clube de Assinaturas com status Ativa.'),
             ('Meta clientes na loja (recepção)', [160] * len(stores), INT, 'Plano de metas de outubro.'),
             ('Meta clientes com retorno marcado', [60] * len(stores), INT, 'Plano de metas de outubro.'),
-            ('Meta resgates (closers, 40 cada)', [80] * len(stores), INT, 'Plano de metas de outubro.')]
+            ('Meta resgates (closer da unidade)', [40] * len(stores), INT, 'Plano de metas de outubro: 40 resgates por closer, uma em cada unidade.')]
     hdr(P, 4, ['Item'] + [s['sig'] for s in stores] + ['Fonte / observação'])
     PR = {}
     for i, (lab, vals, fmt, note) in enumerate(rows):
@@ -404,7 +404,7 @@ def build(out, stores, modo='manha', semanal=False):
         vis = f'COUNTIFS({Ac("A")},{sg},{Ac("I")},1)'
         tile(15, 2, 'CLIENTES NA LOJA', f'={vis}', INT, f'="meta "&{pr("Meta clientes na loja (recepção)")}&" · "&TEXT({vis}/{pr("Meta clientes na loja (recepção)")},"0%")')
         tile(15, 4, 'SAÍRAM COM RETORNO', f'=COUNTIFS({Ac("A")},{sg},{Ac("L")},1)', INT, f'="meta "&{pr("Meta clientes com retorno marcado")}&" · "&TEXT(COUNTIFS({Ac("A")},{sg},{Ac("L")},1)/{pr("Meta clientes com retorno marcado")},"0%")')
-        tile(15, 6, 'VOLTARAM APÓS SUMIR', f'=COUNTIFS({Ac("A")},{sg},{Ac("K")},1)', INT, f'="base dos resgates · meta "&{pr("Meta resgates (closers, 40 cada)")}&" (dupla)"')
+        tile(15, 6, 'VOLTARAM APÓS SUMIR', f'=COUNTIFS({Ac("A")},{sg},{Ac("K")},1)', INT, f'="base dos resgates · meta "&{pr("Meta resgates (closer da unidade)")}')
         tile(15, 8, 'NOVAS ASSINANTES', f'=COUNTIFS({Cc("A")},{sg},{Cc("B")},"Nova")', INT, f'=TEXT(COUNTIFS({Cc("A")},{sg},{Cc("B")},"Cancelada"),"0")&" canceladas · "&{pr("Assinaturas ativas hoje")}&" ativas"')
         tile(15, 10, 'CLIENTES NOVAS', f'={pr("Clientes novas cadastradas no mês")}', INT, f'=TEXT(COUNTIFS({Ac("A")},{sg},{Ac("J")},1),"0")&" já vieram e foram atendidas"')
         tile(15, 12, 'DESISTÊNCIAS', f'=COUNTIFS({Ac("A")},{sg},{Ac("G")},"Cancelado")+COUNTIFS({Ac("A")},{sg},{Ac("G")},"Cliente não compareceu")', INT,
@@ -527,8 +527,8 @@ def build(out, stores, modo='manha', semanal=False):
         rn = nE + 2
         notes = ['Atendimentos = horários finalizados na agenda da Trinks. Faturamento já desconta benefícios usados por assinantes do clube.',
                  'Contas ≥ R$500 = contas fechadas em R$ 500 ou mais em que a pessoa fez algum serviço (base do PIX de R$ 25 das especialistas).',
-                 'A Trinks não registra quem resgatou cada cliente: o realizado das closers é o número da loja de clientes que voltaram após 90+ dias ou após faltar.',
-                 'Recepção: o realizado é o total de clientes atendidas na loja. Nomes "Aux." seguem o cadastro da Trinks (Daiane = Aux. 1, Grazi = Aux. 2).']
+                 'A Trinks não registra quem resgatou cada cliente: o realizado da closer é o número da loja de clientes que voltaram após 90+ dias ou após faltar.',
+                 'Recepção: o realizado é o total de clientes atendidas na loja. Na Trinks: Daiane = Encantadora Aux. 1, Julia = Aux. 2, Rosana = Aux. 3, Laiane = Manicure.']
         for k, t in enumerate(notes):
             E.cell(rn + k, 1, t).font = F(size=9, color=MUTED, italic=True)
         def lbl(ch, fmt=None):
@@ -563,7 +563,7 @@ def build(out, stores, modo='manha', semanal=False):
 
         # ---- Resgate (lista de ação para closers)
         R = wb.create_sheet(f'Resgate_{s["sig"]}')
-        title(R, f'Lista de resgate · {s["loja"]}', 'Para Daiane e Grazi: quem marcou e não veio no mês, e quem está há 60+ dias sem vir e sem horário marcado.', 6)
+        title(R, f'Lista de resgate · {s["loja"]}', 'Para a closer da unidade: quem marcou e não veio no mês, e quem está há 60+ dias sem vir e sem horário marcado.', 6)
         widths(R, [12, 32, 24, 24, 24, 24])
         R.cell(4, 1, 'Marcaram e desistiram no mês').font = F(bold=True, size=11, color=INK)
         n1 = table(R, 5, ['Data', 'Cliente', 'Serviço', 'Profissional', 'Status', 'Situação'], s['desist'], ['dd/mm/yyyy', None, None, None, None, None])
